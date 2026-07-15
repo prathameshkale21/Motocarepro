@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-bs-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}MotoCare Pro — Bike Service, Perfected{% endblock %}</title>
+<meta name="description" content="MotoCare Pro — book, track, and manage motorcycle servicing with real-time job tracking.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.1/aos.css" rel="stylesheet">
+<link href="{% static 'css/style.css' %}" rel="stylesheet">
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav class="mc-navbar navbar navbar-expand-lg">
+  <div class="container-xl d-flex align-items-center justify-content-between">
+    <a class="brand" href="{% url 'pages:landing' %}"><i class="fa-solid fa-gauge-high" style="color:var(--ignition)"></i> Moto<span class="dot">Care</span> Pro</a>
+    <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#mcNav">
+      <i class="fa-solid fa-bars text-white"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="mcNav">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="{% url 'pages:landing' %}#services">Services</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'pages:landing' %}#packages">Packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'pages:landing' %}#reviews">Reviews</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'appointments:track' %}">Track Service</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'pages:about' %}">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'pages:contact' %}">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'pages:faq' %}">FAQ</a></li>
+      </ul>
+      <div class="d-flex align-items-center gap-2">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard:redirect' %}" class="btn btn-outline-chrome btn-sm">Dashboard</a>
+          <form action="{% url 'accounts:logout' %}" method="post" class="d-inline m-0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ignition btn-sm">Logout</button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="btn btn-outline-chrome btn-sm">Log in</a>
+          <a href="{% url 'accounts:register' %}" class="btn btn-ignition btn-sm">Book a Service</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+{% if messages %}
+<div class="container-xl" style="padding-top: 92px;">
+  {% for message in messages %}
+    <div class="alert alert-dark d-flex align-items-center gap-2" style="background:var(--surface-2); border:1px solid var(--hairline); color:var(--chrome); border-radius:12px;" role="alert">
+      <i class="fa-solid fa-circle-info" style="color:var(--ignition-2)"></i> {{ message }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<footer class="mc-footer">
+  <div class="container-xl">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <a class="brand d-inline-flex" href="{% url 'pages:landing' %}"><i class="fa-solid fa-gauge-high" style="color:var(--ignition)"></i> Moto<span class="dot">Care</span> Pro</a>
+        <p class="mt-3" style="color:var(--chrome-dim); max-width:320px;">Real-time motorcycle servicing — book a slot, watch the job move through the workshop, pick your bike up ready to ride.</p>
+        <div class="mt-3">
+          <a href="#" class="social-dot"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-dot"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" class="social-dot"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" class="social-dot"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6>Company</h6>
+        <a href="{% url 'pages:about' %}">About Us</a>
+        <a href="#">Careers</a>
+        <a href="#">Blog</a>
+        <a href="{% url 'pages:contact' %}">Contact</a>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6>Services</h6>
+        <a href="{% url 'pages:landing' %}#services">General Service</a>
+        <a href="{% url 'pages:landing' %}#services">Modification</a>
+        <a href="{% url 'pages:landing' %}#packages">Packages</a>
+        <a href="{% url 'pages:faq' %}">FAQ</a>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6>Account</h6>
+        <a href="{% url 'accounts:login' %}">Log in</a>
+        <a href="{% url 'accounts:register' %}">Register</a>
+        <a href="{% url 'dashboard:redirect' %}">Dashboard</a>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6>Hours</h6>
+        <p style="color:var(--chrome-dim); font-size:0.9rem;">Mon–Sun<br>09:00 – 18:30</p>
+      </div>
+    </div>
+    <hr style="border-color: var(--hairline); margin: 40px 0 20px;">
+    <div class="d-flex justify-content-between flex-wrap gap-2">
+      <small style="color:var(--chrome-dim);">© {% now "Y" %} MotoCare Pro. All Rights Reserved To Prathamesh kale.</small>
+      <small style="color:var(--chrome-dim);">Built with Django &amp; a lot of engine oil.</small>
+    </div>
+  </div>
+</footer>
+
+<div class="fab-stack">
+  <a href="tel:+911234567890" class="fab fab-call" aria-label="Call now"><i class="fa-solid fa-phone"></i></a>
+  <a href="https://wa.me/911234567890" class="fab fab-whatsapp" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.1/aos.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

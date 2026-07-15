@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dash-shell">
+  <aside class="dash-sidebar d-none d-lg-block">
+    <a class="side-link" href="{% url 'dashboard:admin' %}"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+    <div class="side-link active"><i class="fa-solid fa-list-check"></i> Appointments</div>
+    <a class="side-link" href="/admin/"><i class="fa-solid fa-database"></i> Manage Data</a>
+    <form action="{% url 'accounts:logout' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="side-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+    </form>
+  </aside>
+  <main class="dash-main">
+    <span class="eyebrow">Admin · Bookings</span>
+    <h1 class="mt-2 mb-1" style="font-size:1.8rem;">Accept &amp; update service status</h1>
+    <p style="color:var(--chrome-dim);" class="mb-4">Only admins can move a booking through the workshop — accepting, and every status change after that, happens here.</p>
+
+    <div class="d-flex gap-2 flex-wrap mb-4">
+      <a href="{% url 'dashboard:admin_appointments' %}" class="btn-outline-chrome btn-sm {% if not active_filter %}active{% endif %}" style="{% if not active_filter %}border-color:var(--ignition); color:#fff;{% endif %}">All</a>
+      {% for value, label in status_choices %}
+        <a href="?status={{ value }}" class="btn-outline-chrome btn-sm" style="{% if active_filter == value %}border-color:var(--ignition); color:#fff;{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+
+    <div class="card-glass">
+      <div class="table-responsive">
+        <table class="table table-mc mb-0">
+          <thead>
+            <tr>
+              <th>#</th><th>Customer</th><th>Bike</th><th>Center</th><th>Date / Slot</th>
+              <th>Mechanic</th><th>Status</th><th style="min-width:280px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for appt in appointments %}
+            <tr>
+              <td class="mono">#{{ appt.pk }}</td>
+              <td>{{ appt.customer.get_full_name|default:appt.customer.username }}</td>
+              <td>{{ appt.bike }}</td>
+              <td>{{ appt.service_center.name }}</td>
+              <td style="color:var(--chrome-dim);">{{ appt.date }}<br><span class="mono" style="font-size:0.8rem;">{{ appt.time_slot }}</span></td>
+              <td style="color:var(--chrome-dim);">{% if appt.mechanic %}{{ appt.mechanic.user.get_full_name|default:appt.mechanic.user.username }}{% else %}<span style="color:var(--danger);">Unassigned</span>{% endif %}</td>
+              <td>
+                <span class="badge-status {% if appt.status == 'delivered' %}badge-done{% elif appt.status == 'cancelled' %}badge-cancel{% elif appt.status == 'booked' %}badge-booked{% else %}badge-progress{% endif %}">
+                  {{ appt.get_status_display }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                  {% if appt.status == 'booked' %}
+                  <form method="post" action="{% url 'appointments:accept' appt.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'dashboard:admin_appointments' %}">
+                    <button type="submit" class="btn-ignition btn-sm"><i class="fa-solid fa-check me-1"></i>Accept</button>
+                  </form>
+                  {% endif %}
+                  <form method="post" action="{% url 'appointments:update_status' appt.pk %}" class="d-flex gap-2 align-items-center">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'dashboard:admin_appointments' %}">
+                    <select name="status" class="form-select form-select-sm" style="width:auto;">
+                      {% for s in flow %}
+                        <option value="{{ s }}" {% if s == appt.status %}selected{% endif %}>{{ s|title }}</option>
+                      {% endfor %}
+                      <option value="cancelled" {% if appt.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                    <button type="submit" class="btn-outline-chrome btn-sm">Update</button>
+                  </form>
+                  <a href="{% url 'appointments:detail' appt.pk %}" class="btn-outline-chrome btn-sm">Open</a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" style="color:var(--chrome-dim);">No bookings match this filter.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

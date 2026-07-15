@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<section class="section" style="padding-top:140px; max-width:600px; margin:0 auto;">
+  <div class="card-glass" data-aos="fade-up">
+    <h3 class="mb-3" style="font-size:1.4rem;">Your profile</h3>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <button type="submit" class="btn-ignition w-100 mt-3">Save Changes</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<section class="section" style="padding-top:130px; max-width:600px; margin:0 auto;">
+  <div class="card-glass" data-aos="fade-up">
+    <span class="eyebrow">Rate your service</span>
+    <h3 class="mt-2 mb-1" style="font-size:1.4rem;">{{ appt.bike }}</h3>
+    <p style="color:var(--chrome-dim); font-size:0.9rem;" class="mb-4">{{ appt.service_center.name }} · Delivered {{ appt.updated_at|date:"d M Y" }}</p>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <button type="submit" class="btn-ignition w-100 mt-3">Submit Review <i class="fa-solid fa-star ms-2"></i></button>
+    </form>
+  </div>
+</section>
+{% endblock %}

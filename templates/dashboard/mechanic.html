@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dash-shell">
+  <aside class="dash-sidebar d-none d-lg-block">
+    <div class="side-link active"><i class="fa-solid fa-gauge"></i> Jobs Dashboard</div>
+    <a class="side-link" href="{% url 'accounts:profile' %}"><i class="fa-solid fa-user"></i> Profile</a>
+    <form action="{% url 'accounts:logout' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="side-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+    </form>
+  </aside>
+  <main class="dash-main">
+    <span class="eyebrow">Mechanic dashboard</span>
+    <h1 class="mt-2 mb-4" style="font-size:1.8rem;">Today's bay, {{ profile.user.first_name|default:profile.user.username }}</h1>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-card"><div class="stat-value">{{ todays_jobs.count }}</div><div class="stat-label">Today's jobs</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card"><div class="stat-value">{{ pending.count }}</div><div class="stat-label">Pending jobs</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card"><div class="stat-value">{{ completed_count }}</div><div class="stat-label">Completed</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card"><div class="stat-value">{{ profile.rating }}★</div><div class="stat-label">Your rating</div></div>
+      </div>
+    </div>
+
+    <div class="card-solid mb-4">
+      <h4 style="font-size:1.1rem;">Unassigned jobs at your center</h4>
+      <p style="color:var(--chrome-dim); font-size:0.85rem;">Claim a job to add it to your queue. An admin still needs to accept it before work begins.</p>
+      <div class="table-responsive mt-2">
+        <table class="table table-mc mb-0">
+          <thead><tr><th>Bike</th><th>Date</th><th>Slot</th><th></th></tr></thead>
+          <tbody>
+            {% for job in unassigned %}
+            <tr>
+              <td>{{ job.bike }}</td>
+              <td>{{ job.date }}</td>
+              <td class="mono">{{ job.time_slot }}</td>
+              <td>
+                <form method="post" action="{% url 'appointments:claim_job' job.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-ignition btn-sm">Claim</button>
+                </form>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="color:var(--chrome-dim);">No unassigned jobs right now.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-solid mb-4">
+      <h4 style="font-size:1.1rem;">Today's jobs</h4>
+      <div class="table-responsive mt-2">
+        <table class="table table-mc mb-0">
+          <thead><tr><th>Bike</th><th>Customer</th><th>Slot</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {% for job in todays_jobs %}
+            <tr>
+              <td>{{ job.bike }}</td>
+              <td>{{ job.customer.get_full_name|default:job.customer.username }}</td>
+              <td class="mono">{{ job.time_slot }}</td>
+              <td><span class="badge-status badge-progress">{{ job.get_status_display }}</span></td>
+              <td><a href="{% url 'appointments:detail' job.pk %}" class="btn-outline-chrome btn-sm">View</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="color:var(--chrome-dim);">Nothing scheduled today.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-solid">
+      <h4 style="font-size:1.1rem;">All pending jobs</h4>
+      <div class="table-responsive mt-2">
+        <table class="table table-mc mb-0">
+          <thead><tr><th>Bike</th><th>Date</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+          <tbody>
+            {% for job in pending %}
+            <tr>
+              <td>{{ job.bike }}</td>
+              <td>{{ job.date }}</td>
+              <td><span class="badge-status badge-progress">{{ job.get_status_display }}</span></td>
+              <td style="color:var(--chrome-dim); max-width:220px;">{{ job.mechanic_notes|default:"—"|truncatechars:60 }}</td>
+              <td><a href="{% url 'appointments:detail' job.pk %}" class="btn-outline-chrome btn-sm">View</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="color:var(--chrome-dim);">No pending jobs assigned to you.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section" style="padding-top:130px; max-width:520px; margin:0 auto;">
+  <div class="card-glass text-center" data-aos="fade-up">
+    <i class="fa-solid fa-triangle-exclamation mb-3" style="font-size:2rem; color:var(--danger);"></i>
+    <h3 style="font-size:1.3rem;">Remove {{ bike }}?</h3>
+    <p style="color:var(--chrome-dim);">This can't be undone. Past service history for this bike will remain on record.</p>
+    <form method="post" class="d-flex gap-3 justify-content-center mt-3">
+      {% csrf_token %}
+      <a href="{% url 'bikes:list' %}" class="btn-outline-chrome">Cancel</a>
+      <button type="submit" class="btn-ignition">Remove Bike</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

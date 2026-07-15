@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dash-shell">
+  <aside class="dash-sidebar d-none d-lg-block">
+    <div class="side-link active"><i class="fa-solid fa-gauge"></i> Dashboard</div>
+    <a class="side-link" href="{% url 'bikes:list' %}"><i class="fa-solid fa-motorcycle"></i> My Bikes</a>
+    <a class="side-link" href="{% url 'appointments:start' %}"><i class="fa-solid fa-calendar-plus"></i> Book Service</a>
+    <a class="side-link" href="{% url 'accounts:profile' %}"><i class="fa-solid fa-user"></i> Profile</a>
+    <form action="{% url 'accounts:logout' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="side-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+    </form>
+  </aside>
+  <main class="dash-main">
+    <span class="eyebrow">Customer dashboard</span>
+    <h1 class="mt-2 mb-4" style="font-size:1.8rem;">Welcome back, {{ user.first_name|default:user.username }}</h1>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-value">{{ bike_count }}</div>
+          <div class="stat-label">Bikes in garage</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-value">{{ total_services }}</div>
+          <div class="stat-label">Services completed</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-value">{{ user.reward_points }}</div>
+          <div class="stat-label">Reward points</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-value">{% if upcoming %}1{% else %}0{% endif %}</div>
+          <div class="stat-label">Upcoming booking</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-glass mb-4" data-aos="fade-up" style="border:1px solid rgba(255,90,31,0.35);">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+          <span class="eyebrow">Verify your last booking</span>
+          <h4 class="mt-2 mb-1" style="font-size:1.1rem;">Last service status</h4>
+        </div>
+        <a href="{% url 'appointments:track' %}" style="font-size:0.82rem;">Track any booking →</a>
+      </div>
+      {% if latest_booking %}
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-3">
+          <div>
+            <div style="color:#fff;">{{ latest_booking.bike }} <span class="mono" style="color:var(--chrome-dim); font-size:0.8rem;">· Booking #{{ latest_booking.pk }}</span></div>
+            <div style="color:var(--chrome-dim); font-size:0.88rem;">{{ latest_booking.date }} at {{ latest_booking.time_slot }} · {{ latest_booking.service_center.name }}</div>
+          </div>
+          <span class="badge-status {% if latest_booking.status == 'delivered' %}badge-done{% elif latest_booking.status == 'cancelled' %}badge-cancel{% elif latest_booking.status == 'booked' %}badge-booked{% else %}badge-progress{% endif %}">
+            {{ latest_booking.get_status_display }}
+          </span>
+        </div>
+        <a href="{% url 'appointments:detail' latest_booking.pk %}" class="btn-outline-chrome mt-3 d-inline-block">View Full Status</a>
+      {% else %}
+        <p style="color:var(--chrome-dim);" class="mt-2 mb-0">No bookings yet — once you book a service, its status will show up here.</p>
+      {% endif %}
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="card-solid mb-4">
+          <h4 style="font-size:1.1rem;">Upcoming appointment</h4>
+          {% if upcoming %}
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <div>
+                <div style="color:#fff;">{{ upcoming.bike }}</div>
+                <div style="color:var(--chrome-dim); font-size:0.88rem;">{{ upcoming.date }} at {{ upcoming.time_slot }} · {{ upcoming.service_center.name }}</div>
+              </div>
+              <span class="badge-status {% if upcoming.status == 'booked' %}badge-booked{% else %}badge-progress{% endif %}">{{ upcoming.get_status_display }}</span>
+            </div>
+            <a href="{% url 'appointments:detail' upcoming.pk %}" class="btn-outline-chrome mt-3 d-inline-block">Track Service</a>
+          {% else %}
+            <p style="color:var(--chrome-dim);" class="mt-2">No upcoming bookings.</p>
+            <a href="{% url 'appointments:start' %}" class="btn-ignition">Book a Service</a>
+          {% endif %}
+        </div>
+
+        <div class="card-solid">
+          <h4 style="font-size:1.1rem;">Service history</h4>
+          <div class="table-responsive mt-2">
+            <table class="table table-mc mb-0">
+              <thead><tr><th>Bike</th><th>Date</th><th>Status</th><th>Total</th><th></th></tr></thead>
+              <tbody>
+                {% for h in history %}
+                <tr>
+                  <td>{{ h.bike }}</td>
+                  <td>{{ h.date }}</td>
+                  <td><span class="badge-status {% if h.status == 'delivered' %}badge-done{% else %}badge-cancel{% endif %}">{{ h.get_status_display }}</span></td>
+                  <td class="mono">₹{{ h.total_amount }}</td>
+                  <td>
+                    {% if h.status == 'delivered' %}
+                      {% if h.review %}<span style="color:var(--warn-yellow);"><i class="fa-solid fa-star"></i> {{ h.review.rating }}</span>
+                      {% else %}<a href="{% url 'reviews:add' h.pk %}" style="font-size:0.85rem;">Rate it</a>{% endif %}
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="color:var(--chrome-dim);">No completed services yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="card-solid">
+          <h4 style="font-size:1.1rem;" class="mb-3">My garage</h4>
+          {% for bike in bikes %}
+            <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid var(--hairline);">
+              <div>
+                <div style="color:#fff; font-size:0.92rem;">{{ bike.brand }} {{ bike.model }}</div>
+                <div class="mono" style="color:var(--chrome-dim); font-size:0.78rem;">{{ bike.registration_number }}</div>
+              </div>
+              <a href="{% url 'bikes:edit' bike.pk %}" style="color:var(--chrome-dim);"><i class="fa-solid fa-pen"></i></a>
+            </div>
+          {% empty %}
+            <p style="color:var(--chrome-dim);">No bikes added yet.</p>
+          {% endfor %}
+          <a href="{% url 'bikes:add' %}" class="btn-outline-chrome w-100 mt-3 text-center d-block">Add a Bike</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}

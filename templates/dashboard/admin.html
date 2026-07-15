@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dash-shell">
+  <aside class="dash-sidebar d-none d-lg-block">
+    <a class="side-link active" href="{% url 'dashboard:admin' %}"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+    <a class="side-link" href="{% url 'dashboard:admin_appointments' %}"><i class="fa-solid fa-list-check"></i> Appointments</a>
+    <a class="side-link" href="/admin/"><i class="fa-solid fa-database"></i> Manage Data</a>
+    <form action="{% url 'accounts:logout' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="side-link"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+    </form>
+  </aside>
+  <main class="dash-main">
+    <span class="eyebrow">Admin dashboard</span>
+    <h1 class="mt-2 mb-4" style="font-size:1.8rem;">Workshop overview</h1>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-card"><div class="stat-value mono">₹{{ total_revenue }}</div><div class="stat-label">Total revenue</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card"><div class="stat-value mono">₹{{ todays_earnings }}</div><div class="stat-label">Today's earnings</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card"><div class="stat-value">{{ monthly_bookings }}</div><div class="stat-label">Bookings this month</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card"><div class="stat-value">{{ cancelled }}</div><div class="stat-label">Cancelled</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card"><div class="stat-value">{{ total_customers }}</div><div class="stat-label">Customers</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card"><div class="stat-value">{{ total_mechanics }}</div><div class="stat-label">Mechanics</div></div>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-lg-7">
+        <div class="card-solid">
+          <h4 style="font-size:1.05rem;">Jobs by status</h4>
+          <canvas id="statusChart" height="200"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="card-solid">
+          <h4 style="font-size:1.05rem;">Top services</h4>
+          <canvas id="topServicesChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="card-solid">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 style="font-size:1.05rem;" class="mb-0">Recent activity</h4>
+            <a href="{% url 'dashboard:admin_appointments' %}" style="font-size:0.85rem;">Manage all bookings →</a>
+          </div>
+          <div class="table-responsive mt-2">
+            <table class="table table-mc mb-0">
+              <thead><tr><th>#</th><th>Bike</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+              <tbody>
+                {% for a in recent_activity %}
+                <tr>
+                  <td class="mono">#{{ a.pk }}</td>
+                  <td>{{ a.bike }}</td>
+                  <td><span class="badge-status {% if a.status == 'delivered' %}badge-done{% elif a.status == 'cancelled' %}badge-cancel{% elif a.status == 'booked' %}badge-booked{% else %}badge-progress{% endif %}">{{ a.get_status_display }}</span></td>
+                  <td style="color:var(--chrome-dim);">{{ a.updated_at|date:"d M, H:i" }}</td>
+                  <td>
+                    {% if a.status == 'booked' %}
+                    <form method="post" action="{% url 'appointments:accept' a.pk %}">
+                      {% csrf_token %}
+                      <input type="hidden" name="next" value="{% url 'dashboard:admin' %}">
+                      <button type="submit" class="btn-ignition btn-sm">Accept</button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'appointments:detail' a.pk %}" class="btn-outline-chrome btn-sm">Open</a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="color:var(--chrome-dim);">No activity yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="card-solid">
+          <h4 style="font-size:1.05rem;">Recent reviews</h4>
+          {% for r in recent_reviews %}
+            <div class="py-2" style="border-bottom:1px solid var(--hairline);">
+              <div>{% for i in "12345" %}<i class="fa-solid fa-star" style="font-size:0.75rem; color:{% if forloop.counter <= r.rating %}var(--warn-yellow){% else %}var(--hairline){% endif %};"></i>{% endfor %}</div>
+              <p class="mb-0" style="color:var(--chrome-dim); font-size:0.85rem;">{{ r.comment|truncatewords:16 }}</p>
+            </div>
+          {% empty %}
+            <p style="color:var(--chrome-dim);">No reviews yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+const statusCtx = document.getElementById('statusChart');
+new Chart(statusCtx, {
+  type: 'bar',
+  data: {
+    labels: {{ status_labels|safe }},
+    datasets: [{
+      label: 'Jobs',
+      data: {{ status_counts|safe }},
+      backgroundColor: '#FF5A1F',
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#8A9099' }, grid: { color: 'rgba(201,205,211,0.08)' } },
+      y: { ticks: { color: '#8A9099' }, grid: { color: 'rgba(201,205,211,0.08)' } }
+    }
+  }
+});
+
+const topCtx = document.getElementById('topServicesChart');
+new Chart(topCtx, {
+  type: 'doughnut',
+  data: {
+    labels: [{% for s in top_services %}"{{ s.service_types__name }}",{% endfor %}],
+    datasets: [{
+      data: [{% for s in top_services %}{{ s.count }},{% endfor %}],
+      backgroundColor: ['#FF5A1F', '#FF8A4C', '#3ECF8E', '#FFC93C', '#C9CDD3'],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    plugins: { legend: { position: 'bottom', labels: { color: '#C9CDD3' } } }
+  }
+});
+</script>
+{% endblock %}

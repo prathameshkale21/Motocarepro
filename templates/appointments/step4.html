@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<section class="section" style="padding-top:130px; max-width:760px; margin:0 auto;">
+  {% include "appointments/_stepper.html" %}
+  <div class="card-glass" data-aos="fade-up">
+    <h3 class="mb-1" style="font-size:1.4rem;">Engine oil</h3>
+    <p style="color:var(--chrome-dim); font-size:0.9rem;" class="mb-4">Pick a brand, or bring your own and skip this cost.</p>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.bring_own_oil|as_crispy_field }}
+      {{ form.engine_oil|as_crispy_field }}
+      <button type="submit" class="btn-ignition w-100 mt-4">Continue <i class="fa-solid fa-arrow-right ms-2"></i></button>
+    </form>
+  </div>
+</section>
+{% endblock %}

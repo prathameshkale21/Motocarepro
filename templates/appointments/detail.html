@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section" style="padding-top:130px;">
+  <div class="container-xl" style="max-width:900px;">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+      <div>
+        <span class="eyebrow">Appointment #{{ appt.pk }}</span>
+        <h1 class="mt-2" style="font-size:1.8rem;">{{ appt.bike }}</h1>
+        <p style="color:var(--chrome-dim);">{{ appt.service_center.name }} · {{ appt.date }} at {{ appt.time_slot }}</p>
+      </div>
+      <span class="badge-status {% if appt.status == 'delivered' %}badge-done{% elif appt.status == 'cancelled' %}badge-cancel{% elif appt.status == 'booked' %}badge-booked{% else %}badge-progress{% endif %}">
+        {{ appt.get_status_display }}
+      </span>
+    </div>
+
+    {% if appt.status == 'delivered' and appt.customer == user %}
+      <div class="card-glass mb-4" style="border:1px solid var(--signal-green);">
+        {% if appt.review %}
+          <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-circle-check" style="color:var(--signal-green);"></i>
+            <span style="color:var(--chrome-dim);">You rated this service {{ appt.review.rating }}/5. Thanks!</span>
+          </div>
+        {% else %}
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span style="color:#fff;"><i class="fa-solid fa-star me-2" style="color:var(--warn-yellow);"></i>Your bike's home — how did we do?</span>
+            <a href="{% url 'reviews:add' appt.pk %}" class="btn-ignition">Leave a Review</a>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="row g-4">
+      <div class="col-lg-7" data-aos="fade-right">
+        <div class="card-solid">
+          <h4 style="font-size:1.05rem;" class="mb-4">Live status</h4>
+          <div class="track-line">
+            {% for step in timeline %}
+              <div class="track-item {% if step.current %}current{% elif step.done %}done{% endif %}">
+                <div class="node">
+                  {% if step.current %}<i class="fa-solid fa-gear fa-spin"></i>{% elif step.done %}<i class="fa-solid fa-check"></i>{% else %}{{ forloop.counter }}{% endif %}
+                </div>
+                <div class="title">{{ step.label }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5" data-aos="fade-left">
+        <div class="card-solid mb-3">
+          <h4 style="font-size:1.05rem;">Order summary</h4>
+          <ul style="list-style:none; padding:0; color:var(--chrome-dim); font-size:0.9rem;">
+            {% for st in appt.service_types.all %}<li class="py-1">{{ st.name }}</li>{% endfor %}
+            {% if appt.package %}<li class="py-1">{{ appt.package }} package</li>{% endif %}
+            {% for m in appt.modifications.all %}<li class="py-1">{{ m.name }}</li>{% endfor %}
+            {% if appt.engine_oil %}<li class="py-1">Oil: {{ appt.engine_oil }}</li>{% endif %}
+            {% if appt.bring_own_oil %}<li class="py-1">Customer's own oil</li>{% endif %}
+          </ul>
+          <hr style="border-color:var(--hairline);">
+          <div class="d-flex justify-content-between"><span style="color:var(--chrome-dim);">Subtotal</span><span class="mono">₹{{ appt.subtotal }}</span></div>
+          {% if appt.discount %}<div class="d-flex justify-content-between"><span style="color:var(--chrome-dim);">Discount</span><span class="mono" style="color:var(--signal-green);">-₹{{ appt.discount }}</span></div>{% endif %}
+          <div class="d-flex justify-content-between mt-2"><strong style="color:#fff;">Total</strong><strong class="mono" style="color:#fff;">₹{{ appt.total_amount }}</strong></div>
+        </div>
+
+        {% if is_admin_user %}
+        <div class="card-solid">
+          <h4 style="font-size:1.05rem;">Update job status</h4>
+          <p style="color:var(--chrome-dim); font-size:0.82rem;">Accepting and every status change is an admin-only action.</p>
+          {% if appt.status == 'booked' %}
+          <form method="post" action="{% url 'appointments:accept' appt.pk %}" class="mb-3">
+            {% csrf_token %}
+            <button type="submit" class="btn-ignition w-100"><i class="fa-solid fa-check me-2"></i>Accept This Booking</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{% url 'appointments:update_status' appt.pk %}">
+            {% csrf_token %}
+            <label class="form-label d-block mt-2">Status</label>
+            <select name="status" class="form-select">
+              {% for s in flow %}
+                <option value="{{ s }}" {% if s == appt.status %}selected{% endif %}>{{ s|title }}</option>
+              {% endfor %}
+              <option value="cancelled" {% if appt.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+            <label class="form-label d-block mt-3">Notes</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="e.g. Waiting on brake pads from supplier">{{ appt.mechanic_notes }}</textarea>
+            <button type="submit" class="btn-ignition w-100 mt-3">Update Status</button>
+          </form>
+        </div>
+        {% elif is_mechanic_user %}
+        <div class="card-solid">
+          <h4 style="font-size:1.05rem;">Job status</h4>
+          <p style="color:var(--chrome-dim); font-size:0.88rem;">Status is view-only for mechanics — an admin accepts bookings and moves them through each stage. Notes below are the latest from the workshop.</p>
+          {% if appt.mechanic_notes %}
+            <div class="mt-2" style="color:#fff; font-size:0.9rem; white-space:pre-wrap;">{{ appt.mechanic_notes }}</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

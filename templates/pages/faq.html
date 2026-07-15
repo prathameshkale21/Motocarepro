@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section" style="padding-top:140px;">
+  <div class="container-xl" style="max-width:820px;">
+    <span class="eyebrow">Frequently asked</span>
+    <h1 class="mt-2 mb-5" style="font-size:2.4rem;">Questions riders actually ask.</h1>
+    <div class="accordion" id="faqAccordion">
+      {% for item in faqs %}
+        <div class="accordion-item" style="background:var(--surface); border:1px solid var(--hairline); margin-bottom:12px; border-radius:12px; overflow:hidden;" data-aos="fade-up">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" style="background:var(--surface); color:#fff;" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ forloop.counter }}">
+              {{ item.q }}
+            </button>
+          </h2>
+          <div id="faq{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body" style="color:var(--chrome-dim);">{{ item.a }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

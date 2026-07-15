@@ -1,0 +1,26 @@
+<div class="stepper">
+  <div class="step-node {% if step == 1 %}active{% elif step > 1 %}done{% endif %}">
+    <div class="dot">{% if step > 1 %}<i class="fa-solid fa-check"></i>{% else %}1{% endif %}</div>
+    <div class="label">Date &amp; Slot</div>
+  </div>
+  <div class="step-node {% if step == 2 %}active{% elif step > 2 %}done{% endif %}">
+    <div class="dot">{% if step > 2 %}<i class="fa-solid fa-check"></i>{% else %}2{% endif %}</div>
+    <div class="label">Bike</div>
+  </div>
+  <div class="step-node {% if step == 3 %}active{% elif step > 3 %}done{% endif %}">
+    <div class="dot">{% if step > 3 %}<i class="fa-solid fa-check"></i>{% else %}3{% endif %}</div>
+    <div class="label">Services</div>
+  </div>
+  <div class="step-node {% if step == 4 %}active{% elif step > 4 %}done{% endif %}">
+    <div class="dot">{% if step > 4 %}<i class="fa-solid fa-check"></i>{% else %}4{% endif %}</div>
+    <div class="label">Oil</div>
+  </div>
+  <div class="step-node {% if step == 5 %}active{% elif step > 5 %}done{% endif %}">
+    <div class="dot">{% if step > 5 %}<i class="fa-solid fa-check"></i>{% else %}5{% endif %}</div>
+    <div class="label">Pickup</div>
+  </div>
+  <div class="step-node {% if step == 6 %}active{% endif %}">
+    <div class="dot">6</div>
+    <div class="label">Payment</div>
+  </div>
+</div>

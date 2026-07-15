@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section text-center" style="padding-top:150px; max-width:640px; margin:0 auto;">
+  <div class="card-glass" data-aos="zoom-in">
+    <i class="fa-solid fa-circle-check mb-3" style="font-size:3rem; color:var(--signal-green);"></i>
+    <h2 style="font-size:1.8rem;">Booking Confirmed</h2>
+    <p style="color:var(--chrome-dim);">Appointment <span class="mono">#{{ appt.pk }}</span> for {{ appt.bike }} is set for <strong style="color:#fff;">{{ appt.date }}</strong> at <strong style="color:#fff;">{{ appt.time_slot }}</strong>.</p>
+    <div class="mono mt-3" style="font-size:1.6rem; color:var(--ignition-2);">₹{{ appt.total_amount }}</div>
+    <div class="d-flex gap-3 justify-content-center mt-4 flex-wrap">
+      <a href="{% url 'appointments:detail' appt.pk %}" class="btn-ignition">Track This Service</a>
+      <a href="{% url 'appointments:invoice' appt.pk %}" class="btn-outline-chrome"><i class="fa-solid fa-file-invoice me-2"></i>View GST Bill</a>
+      <a href="{% url 'dashboard:customer' %}" class="btn-outline-chrome">Go to Dashboard</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

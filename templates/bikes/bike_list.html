@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="section" style="padding-top:130px;">
+  <div class="container-xl">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+      <div>
+        <span class="eyebrow">My garage</span>
+        <h1 class="mt-2" style="font-size:2rem;">Your bikes</h1>
+      </div>
+      <a href="{% url 'bikes:add' %}" class="btn-ignition"><i class="fa-solid fa-plus me-2"></i>Add a Bike</a>
+    </div>
+
+    <div class="row g-4">
+      {% for bike in bikes %}
+      <div class="col-md-6 col-lg-4" data-aos="fade-up">
+        <div class="card-service">
+          {% if bike.image %}
+            <img src="{{ bike.image.url }}" alt="{{ bike }}" style="width:100%; height:160px; object-fit:cover; border-radius:10px; margin-bottom:14px;">
+          {% else %}
+            <div class="icon"><i class="fa-solid fa-motorcycle"></i></div>
+          {% endif %}
+          <h4 style="font-size:1.1rem;">{{ bike.brand }} {{ bike.model }}</h4>
+          <p class="mono" style="color:var(--chrome-dim); font-size:0.85rem;">{{ bike.registration_number }} · {{ bike.year }} · {{ bike.engine_cc }}cc · {{ bike.get_fuel_type_display }}</p>
+          <div class="d-flex gap-2 mt-3">
+            <a href="{% url 'bikes:edit' bike.pk %}" class="btn-outline-chrome btn-sm">Edit</a>
+            <a href="{% url 'bikes:delete' bike.pk %}" class="btn-outline-chrome btn-sm" style="color:var(--danger); border-color:rgba(255,77,94,0.4);">Remove</a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="card-glass text-center py-5">
+          <i class="fa-solid fa-motorcycle mb-3" style="font-size:2rem; color:var(--chrome-dim);"></i>
+          <p style="color:var(--chrome-dim);">No bikes yet. Add one to start booking a service.</p>
+          <a href="{% url 'bikes:add' %}" class="btn-ignition mt-2 d-inline-block">Add Your First Bike</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

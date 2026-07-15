@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="hero">
+  <div class="container-xl">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6" data-aos="fade-right">
+        <span class="eyebrow"><span class="led"></span> Live at 4 service centers today</span>
+        <h1 class="hero-title mt-3">Your bike's next service, <span class="accent">tracked like a dashboard.</span></h1>
+        <p class="hero-sub">Book a slot, choose your oil, add a mod or two — then watch the job move from pickup to delivery in real time, the way you'd watch a rev counter climb.</p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="{% if user.is_authenticated %}{% url 'appointments:start' %}{% else %}{% url 'accounts:register' %}{% endif %}" class="btn-ignition"><i class="fa-solid fa-calendar-check me-2"></i>Book a Service</a>
+          <a href="#services" class="btn-outline-chrome">Explore Services</a>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat">
+            <div class="value" id="liveCounter" data-base="{{ live_bookings_today }}">{{ live_bookings_today }}</div>
+            <div class="label">Bookings today</div>
+          </div>
+          <div class="stat">
+            <div class="value">{{ mechanic_count }}<span class="unit">pro</span></div>
+            <div class="label">Mechanics on duty</div>
+          </div>
+          <div class="stat">
+            <div class="value">{{ avg_rating }}<i class="fa-solid fa-star" style="font-size:1rem;color:var(--warn-yellow)"></i></div>
+            <div class="label">Average rating</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6" data-aos="fade-left">
+        <div class="gauge-wrap">
+          <svg viewBox="0 0 460 300" width="100%">
+            <defs>
+              <linearGradient id="arcGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#3ECF8E"/>
+                <stop offset="55%" stop-color="#FFC93C"/>
+                <stop offset="100%" stop-color="#FF5A1F"/>
+              </linearGradient>
+            </defs>
+            <circle cx="230" cy="230" r="150" fill="var(--surface)" stroke="var(--hairline)" stroke-width="2"/>
+            <path d="M 100 300 A 150 150 0 1 1 360 300" fill="none" stroke="var(--surface-3)" stroke-width="16" stroke-linecap="round"/>
+            <path d="M 100 300 A 150 150 0 1 1 360 300" fill="none" stroke="url(#arcGrad)" stroke-width="16" stroke-linecap="round" stroke-dasharray="565" stroke-dashoffset="90" class="gauge-glow"/>
+            {% for i in "0123456789" %}
+              <text x="230" y="230" class="gauge-readout" fill="var(--chrome-dim)" font-size="11"
+                    transform="rotate({{ forloop.counter0|add:"-9" }}0 230 230) translate(0 -128)">{{ forloop.counter0|add:"1" }}0</text>
+            {% endfor %}
+            <line x1="230" y1="230" x2="230" y2="105" stroke="#fff" stroke-width="4" stroke-linecap="round" class="gauge-needle gauge-glow" data-angle="42"/>
+            <circle cx="230" cy="230" r="10" fill="#fff"/>
+            <text x="230" y="200" text-anchor="middle" font-family="JetBrains Mono" font-size="30" font-weight="700" fill="#fff">{{ live_bookings_today|default:"12" }}</text>
+            <text x="230" y="222" text-anchor="middle" font-family="Inter" font-size="11" letter-spacing="2" fill="var(--chrome-dim)">JOBS IN PROGRESS</text>
+            <text x="230" y="270" text-anchor="middle" font-family="JetBrains Mono" font-size="13" fill="var(--signal-green)">● WORKSHOP ONLINE</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why choose us -->
+<section class="section section-tight">
+  <div class="container-xl">
+    <div class="row g-4 text-center">
+      <div class="col-6 col-md-3" data-aos="fade-up">
+        <i class="fa-solid fa-truck-fast mb-2" style="color:var(--ignition-2); font-size:1.6rem;"></i>
+        <h4 style="font-size:1rem;">Pickup &amp; Drop</h4>
+        <p style="color:var(--chrome-dim); font-size:0.88rem;">We collect your bike, you skip the ride to the garage.</p>
+      </div>
+      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="80">
+        <i class="fa-solid fa-list-check mb-2" style="color:var(--ignition-2); font-size:1.6rem;"></i>
+        <h4 style="font-size:1rem;">Live Job Tracking</h4>
+        <p style="color:var(--chrome-dim); font-size:0.88rem;">Follow every stage from inspection to delivery.</p>
+      </div>
+      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="160">
+        <i class="fa-solid fa-oil-can mb-2" style="color:var(--ignition-2); font-size:1.6rem;"></i>
+        <h4 style="font-size:1rem;">Choose Your Oil</h4>
+        <p style="color:var(--chrome-dim); font-size:0.88rem;">Genuine and premium brands, or bring your own.</p>
+      </div>
+      <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="240">
+        <i class="fa-solid fa-shield-halved mb-2" style="color:var(--ignition-2); font-size:1.6rem;"></i>
+        <h4 style="font-size:1rem;">Warranted Work</h4>
+        <p style="color:var(--chrome-dim); font-size:0.88rem;">Every package ships with a written warranty.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services -->
+<section class="section" id="services">
+  <div class="container-xl">
+    <span class="eyebrow">What we do</span>
+    <h2 class="mt-2 mb-5" style="font-size:2.2rem;">Service &amp; Modification, <span style="color:var(--ignition)">under one roof.</span></h2>
+    <div class="row g-4">
+      {% for cat in categories %}
+        {% for st in cat.service_types.all|slice:":4" %}
+          <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:0 }}0">
+            <div class="card-service">
+              <div class="icon"><i class="fa-solid {{ st.icon|default:'fa-wrench' }}"></i></div>
+              <h4 style="font-size:1.05rem;">{{ st.name }}</h4>
+              <p style="color:var(--chrome-dim); font-size:0.9rem;">{{ st.description|default:"Handled by certified mechanics, every time." }}</p>
+              <div class="mono mt-2" style="color:var(--signal-green);">from ₹{{ st.base_price }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      {% empty %}
+        <div class="col-12" style="color:var(--chrome-dim);">Service catalogue is being loaded — add ServiceCategory / ServiceType entries in the admin to populate this section.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Packages -->
+<section class="section section-tight" id="packages" style="background:var(--surface-2);">
+  <div class="container-xl">
+    <span class="eyebrow">Packages</span>
+    <h2 class="mt-2 mb-5" style="font-size:2.2rem;">Pick a tier, we handle the checklist.</h2>
+    <div class="row g-4">
+      {% for pkg in packages %}
+      <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}0">
+        <div class="card-package {% if pkg.is_featured %}featured{% endif %}">
+          {% if pkg.is_featured %}<span class="tier-badge">Most booked</span>{% endif %}
+          <h3 style="font-size:1.2rem;">{{ pkg.get_tier_display }}</h3>
+          <p style="color:var(--chrome-dim); font-size:0.85rem;">{{ pkg.tagline }}</p>
+          <div class="price">₹{{ pkg.price }}</div>
+          <ul>
+            {% for s in pkg.services_included.all %}
+              <li><i class="fa-solid fa-check"></i>{{ s.name }}</li>
+            {% endfor %}
+            <li><i class="fa-solid fa-clock" style="color:var(--chrome-dim)"></i>{{ pkg.duration_label }}</li>
+            <li><i class="fa-solid fa-shield" style="color:var(--chrome-dim)"></i>{{ pkg.warranty_label }}</li>
+          </ul>
+          <a href="{% if user.is_authenticated %}{% url 'appointments:start' %}{% else %}{% url 'accounts:register' %}{% endif %}" class="btn-ignition w-100 text-center d-block">Choose {{ pkg.get_tier_display }}</a>
+        </div>
+      </div>
+      {% empty %}
+        <div class="col-12" style="color:var(--chrome-dim);">Add ServicePackage entries (Silver / Gold / Platinum / Premium) in the admin to populate this section.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- How booking works -->
+<section class="section">
+  <div class="container-xl">
+    <span class="eyebrow">How it works</span>
+    <h2 class="mt-2 mb-5" style="font-size:2.2rem;">Eight taps, one delivered bike.</h2>
+    <div class="row g-3">
+      {% for step in booking_steps %}
+        <div class="col-6 col-md-3 col-lg-3" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0 }}0">
+          <div class="card-glass text-center">
+            <div class="mono" style="color:var(--ignition-2); font-size:0.8rem;">STEP {{ forloop.counter }}</div>
+            <div style="color:#fff; font-family:var(--font-display); margin-top:6px;">{{ step }}</div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Reviews -->
+<section class="section section-tight" id="reviews" style="background:var(--surface-2);">
+  <div class="container-xl">
+    <span class="eyebrow">Riders say</span>
+    <h2 class="mt-2 mb-5" style="font-size:2.2rem;">Reviews from the workshop floor.</h2>
+    <div class="row g-4">
+      {% for r in reviews %}
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}0">
+        <div class="card-service">
+          <div class="mb-2">
+            {% for i in "12345" %}
+              <i class="fa-solid fa-star" style="color: {% if forloop.counter <= r.rating %}var(--warn-yellow){% else %}var(--hairline){% endif %}"></i>
+            {% endfor %}
+          </div>
+          <p style="color:var(--chrome-dim); font-size:0.92rem;">{{ r.comment|default:"Great, on-time service."|truncatewords:28 }}</p>
+          <div class="mono mt-2" style="color:#fff; font-size:0.85rem;">— {{ r.customer.first_name|default:r.customer.username }}</div>
+        </div>
+      </div>
+      {% empty %}
+        <div class="col-12" style="color:var(--chrome-dim);">No published reviews yet — they'll appear here once customers rate their service.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section text-center">
+  <div class="container-xl">
+    <h2 style="font-size:2.4rem;" data-aos="fade-up">Ready when your bike is.</h2>
+    <p style="color:var(--chrome-dim); max-width:480px; margin:0 auto 28px;" data-aos="fade-up" data-aos-delay="80">Create an account, add your bike, and get the next available slot in under two minutes.</p>
+    <a href="{% if user.is_authenticated %}{% url 'appointments:start' %}{% else %}{% url 'accounts:register' %}{% endif %}" class="btn-ignition" data-aos="fade-up" data-aos-delay="160"><i class="fa-solid fa-motorcycle me-2"></i>Book Your Slot</a>
+  </div>
+</section>
+
+{% endblock %}
